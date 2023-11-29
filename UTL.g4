@@ -49,7 +49,7 @@ THROW:'throw';
 RETURN:'return';
 
 EXCEPTION  : 'Exception';
-TYPE:'type';
+TYPE:'bool' | 'int' | 'double' | 'string';
 TEXT  : 'Text';
 
 SCHEDULE:'@schedule';
@@ -148,13 +148,23 @@ statement : VarDeclaration {System.out.println("VarDec:"+...);}
 
 
 program:
-    (functionDec)*
+    (functionTotal)*
     mainBlock
     ;
 
+functionTotal:
+    functionDec | func_on_start | func_on_init;
+
+
+func_on_start:
+        VOID ONSTART LPAR TRADE ID RPAR (THROW EXCEPTION)? LBRACE ((statement)+) RBRACE;
+
+func_on_init:
+        VOID ONININT LPAR TRADE ID RPAR (THROW EXCEPTION)? LBRACE ((statement)+) RBRACE;
+
 functionDec:
-    (TYPE | VOID) ID {System.out.println("FunctionDec: " + $ID.getText());}
-    LPAR (functionVarDec (COMMA functionVarDec)*)? RPAR COLON type
+    (type | VOID) ID {System.out.println("FunctionDec: " + $ID.getText());} //chap
+    LPAR (functionVarDec (COMMA functionVarDec)*)? RPAR (THROW EXCEPTION)?
     LBRACE ((statement)+) RBRACE
     ;
 
@@ -162,8 +172,8 @@ functionVarDec:
     type ID {System.out.println("ArgumentDec: " + $ID.getText());}
     ;
 
-mainBlock:
-    {System.out.println("MainBody");} MAIN LBRACE (statement)+ RBRACE
+mainBlock: // check!!!!!
+    {System.out.println("MainBody");}(INT | VOID) MAIN LBRACE (statement)+ RBRACE
     ;
 
 statement:
@@ -330,6 +340,9 @@ type:
     BOOLEAN
     | INT
     | FLOAT
+    | CANDLE
+    | TRADE
+    | STRING
     ;
 
 
