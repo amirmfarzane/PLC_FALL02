@@ -9,7 +9,7 @@ SHARED:'Shared';
 
 //Types
 BOOL : 'bool';
-NUM: INT | FLOAT | DOUBLE;
+
 INT : 'int';
 FLOAT: 'float';
 DOUBLE:'double';
@@ -21,6 +21,7 @@ VOID : 'void';
 //Types Vals
 NATURAL_DIGIT : [1-9][0-9]*;
 ZERO : '0';
+DOUBLE_NUM : [1-9][0-9]'.'[0-9]*;
 
 TRUE: 'true';
 FALSE: 'false';
@@ -181,7 +182,7 @@ functionVarDec:
     ;
 
 mainBlock: // check!!!!!
-    {System.out.println("MainBody");}(INT | VOID) MAIN LBRACE (statement)+ RBRACE
+    {System.out.println("MainBody");}(INT | VOID) MAIN LPAR RPAR LBRACE (statement)+ RBRACE
     ;
 
 statement:
@@ -192,7 +193,7 @@ statement:
 
 
 methodCall:
-    ID DOT ID // .....
+    ID DOT ID LPAR expression RPAR
     ;
 
 
@@ -461,6 +462,7 @@ numericValue:
 type:
     BOOL
     | INT
+    |DOUBLE
     | FLOAT
     | CANDLE
     | TRADE
