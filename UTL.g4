@@ -180,7 +180,7 @@ functionDec:
     ;
 
 functionVarDec:
-    pretype type ID {System.out.println("ArgumentDec: " + $ID.getText());}
+    pretype? type ID {System.out.println("ArgumentDec: " + $ID.getText());}
     ;
 
 mainBlock: // check!!!!!
@@ -536,10 +536,8 @@ queryType2:
     ;
 
 returnSmt:
-    RETURN {System.out.println("Return");} (value  | ID)? SEMICOLON
+    RETURN {System.out.println("Return");} (expression)? SEMICOLON
     ;
-
-
 
 forLoop:
     {System.out.println("Loop: for");}
