@@ -196,8 +196,6 @@ statement:
     )
     ;
 
-
-
 scheduleStatment:
     SCHEDULE (LPAR schedule2Statement  RPAR | ID) (PARALLEL | PREORDER)
      ( LPAR schedule2Statement RPAR | ID) SEMICOLON
@@ -211,11 +209,8 @@ schedule2Statement:
 forLoopStatement:
     (assignSmt  //| ( predicate SEMICOLON )
     | (assignmentExpression SEMICOLON?)
-    | localVarDeclaration
-
-    )
+    | localVarDeclaration)
     ;
-
 
 break_statment:
     BREAK SEMICOLON
@@ -225,10 +220,6 @@ break_statment:
 methodCall:
     ID DOT ID LPAR expression RPAR
     ;
-
-
-
-
 
 unaryOperator:
     BITWISE_AND
@@ -349,7 +340,6 @@ noPointerAbstractDeclarator
     ;
 
 abstractDeclarator
-//    : pointerAbstractDeclarator
     : noPointerAbstractDeclarator? parametersAndQualifiers type
     ;
 
@@ -357,21 +347,22 @@ theTypeId
     : typeSpecifierSeq abstractDeclarator?
     ;
 
-
 postfixExpression
     :(type ) (
              LPAR initializerList? RPAR
              | bracedInitList
-         )
-    | ID
-    | postfixExpression LBRACKET (expression | bracedInitList) RBRACKET
-    | builtInFunction LPAR initializerList? RPAR
-    | postfixExpression LPAR initializerList? RPAR
-
-    | postfixExpression (DOT) (ID | builtInVar)
-    | postfixExpression (PLUS_PLUS | MINUS_MINUS)
+         )postfixExpressionTemp
+    | ID postfixExpressionTemp
+    | builtInFunction LPAR initializerList? RPAR postfixExpressionTemp
     ;
 
+postfixExpressionTemp
+    :
+    |  (DOT) (ID | builtInVar)postfixExpressionTemp
+    |  (PLUS_PLUS | MINUS_MINUS) postfixExpressionTemp
+    |  LPAR initializerList? RPAR postfixExpressionTemp
+    |  LBRACKET (expression | bracedInitList) RBRACKET postfixExpressionTemp
+    ;
 
 builtInFunction:
     ORDER
@@ -468,14 +459,6 @@ ifStatement :
     (ELSE (statement | LBRACE statement*RBRACE ))?
     ;
 
-
-
-
-
-
-
-
-
 assignSmt:
     variable ASSIGN expression SEMICOLON
     ;
@@ -555,78 +538,6 @@ tryStatement:
     TRY LBRACE statement* RBRACE CATCH EXCEPTION ID LBRACE statement* RBRACE
     ;
 
-
-
-
-// predicate:
-//     predicateIdentifier LPAR variable RPAR
-//     ;
-
-//expression:
-//    andExpr expression2
-//    ;
-//
-//expression2:
-//    OR andExpr expression2 {System.out.println("Operator: " + $OR.getText());}
-//    |
-//    ;
-//
-//andExpr:
-//    eqExpr andExpr2
-//    ;
-//
-//andExpr2:
-//    AND eqExpr andExpr2 {System.out.println("Operator: " + $AND.getText());}
-//    |
-//    ;
-//
-//eqExpr:
-//    compExpr eqExpr2
-//    ;
-//
-//eqExpr2:
-//    (op = ( EQ | NEQ )) compExpr eqExpr2 {System.out.println("Operator: " + $op.getText());}
-//    |
-//    ;
-//
-//compExpr:
-//    additive compExpr2
-//    ;
-//
-//compExpr2:
-//    (op = ( LT | LTE | GT | GTE)) additive compExpr2 {System.out.println("Operator: " + $op.getText());}
-//    |
-//    ;
-//
-//additive:
-//    multicative additive2
-//    ;
-//
-//additive2:
-//    (op = ( PLUS | MINUS )) multicative additive2 {System.out.println("Operator: " + $op.getText());}
-//    |
-//    ;
-//
-//multicative:
-//    unary multicative2
-//    ;
-//
-//multicative2:
-//    (op = ( MULT | MOD | DIV )) unary multicative2 {System.out.println("Operator: " + $op.getText());}
-//    |
-//    ;
-
-//unary:
-//    other
-//    |
-//     (op = ( PLUS | MINUS | NOT )) {System.out.println("Operator: " + $op.getText());} other
-//    ;
-//
-//other:
-//    LPAR expression RPAR | variable | value
-//    | queryType1 | functionCall
-//    ;
-
 functionCall:
     ID LPAR (expression (COMMA expression)*)? RPAR {System.out.println("FunctionCall");}
     ;
@@ -639,20 +550,16 @@ value:
     | MINUS numericValue
     ;
 
-
-
 numericValue:
     INT_VALUE
     | FLOAT
     | ZERO
     ;
 
-
 pretype:
     STATIC
     | SHARED
     ;
-
 
 type:
     BOOL
