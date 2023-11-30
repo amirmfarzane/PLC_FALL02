@@ -190,8 +190,8 @@ mainBlock: // check!!!!!
 statement:
     ((assignSmt  //| ( predicate SEMICOLON )
     | returnSmt //| functionCall | methodCall
-    |break_statment
-    | tryStatement | (assignmentExpression SEMICOLON) | scheduleStatment
+    |break_statment | printSmt | functionCall
+    | tryStatement |scheduleStatment
     | forLoop | while_Loop | localVarDeclaration | ifStatement )
     )
     ;
@@ -368,7 +368,7 @@ postfixExpression
     | postfixExpression LBRACKET (expression | bracedInitList) RBRACKET
     | builtInFunction LPAR initializerList? RPAR
     | postfixExpression LPAR initializerList? RPAR
-
+    |
     | postfixExpression (DOT) (ID | builtInVar)
     | postfixExpression (PLUS_PLUS | MINUS_MINUS)
     ;
@@ -381,7 +381,6 @@ builtInFunction:
     |TERMINATE
     |GETCANDLE
     |CLOSE
-    |PRINT
     |OPEN
     |ONSTART
     |REFRESHRATE
@@ -517,7 +516,7 @@ arrayList:
     ;
 
 printSmt:
-    PRINT {System.out.println("Built-in: print");} LPAR printExpr RPAR SEMICOLON
+    PRINT {System.out.println("Built-in: print");} LPAR initializerList? RPAR SEMICOLON
     ;
 
 printExpr:
@@ -543,8 +542,6 @@ returnSmt:
     ;
 
 forLoop:
-    {System.out.println("Loop: for");}
-
     FOR {System.out.println("Loop:for"}
     LPAR forLoopStatement conditionalExpression SEMICOLON forLoopStatement RPAR
     LBRACE statement+ RBRACE
@@ -552,7 +549,7 @@ forLoop:
 
 while_Loop:
    WHILE {System.out.println("Loop:while"} LPAR forLoopStatement  RPAR
-        ((LBRACE statement+ RBRACE) | statement)
+        ((LBRACE statement* RBRACE) | statement)
        ;
 
 tryStatement:
@@ -632,7 +629,7 @@ tryStatement:
 //    ;
 
 functionCall:
-    ID LPAR (expression (COMMA expression)*)? RPAR {System.out.println("FunctionCall");}
+    (ID | builtInFunction) LPAR (expression (COMMA expression)*)? RPAR {System.out.println("FunctionCall");}
     ;
 
 value:
