@@ -188,7 +188,14 @@ statement:
     | returnSmt //| functionCall | methodCall
 
     | tryStatement | (assignmentExpression SEMICOLON)
-    | printSmt | forLoop | localVarDeclaration | ifStatement) 
+    | printSmt | forLoop | localVarDeclaration | ifStatement )
+    )
+    ;
+
+forLoopStatement:
+    (assignSmt  //| ( predicate SEMICOLON )
+    | (assignmentExpression SEMICOLON?)
+    | localVarDeclaration
     )
     ;
 
@@ -384,7 +391,9 @@ additiveExpression
     ;
 
 shiftExpression
-    : additiveExpression (shiftOperator additiveExpression)*
+    :
+    LPAR shiftExpression RPAR
+    |additiveExpression (shiftOperator additiveExpression)*
     ;
 
 shiftOperator
@@ -393,23 +402,30 @@ shiftOperator
     ;
 
 relationalExpression
-    : shiftExpression ((LT | GT ) shiftExpression)*
+    :
+    LPAR relationalExpression RPAR
+    |shiftExpression ((LT | GT ) shiftExpression)*
     ;
 
 equalityExpression
-    : relationalExpression ((EQ | NEQ) relationalExpression)*
+    :
+    LPAR equalityExpression RPAR
+    |relationalExpression ((EQ | NEQ) relationalExpression)*
     ;
 
 logicalAndExpression:
-    equalityExpression (AND equalityExpression)*
+    LPAR logicalAndExpression RPAR
+    |equalityExpression (AND equalityExpression)*
     ;
 
 logicalOrExpression:
-    logicalAndExpression (OR logicalAndExpression)*
+    LPAR  logicalOrExpression RPAR
+    |logicalAndExpression (OR logicalAndExpression)*
     ;
 
 conditionalExpression:
-    logicalOrExpression
+    LPAR conditionalExpression RPAR
+    | logicalOrExpression
 //     ( expression Colon assignmentExpression)?
     ;
 
@@ -498,9 +514,13 @@ returnSmt:
     RETURN {System.out.println("Return");} (value  | ID)? SEMICOLON
     ;
 
+
+
 forLoop:
-    {System.out.println("Loop: for");} FOR LPAR ID COLON ID RPAR
-    LBRACE ((statement)*) RBRACE
+    {System.out.println("Loop: for");}
+
+    FOR LPAR forLoopStatement conditionalExpression SEMICOLON forLoopStatement RPAR
+    LBRACE statement+ RBRACE
     ;
 
 
@@ -616,7 +636,7 @@ type:
     | ORDER
     | TRADE
     ;
-    
+
 assign_value:
     INT_VALUE
     | TRUE
@@ -632,7 +652,6 @@ builtInVar:
     BID
     |ASK
     ;
-
 
 
 
