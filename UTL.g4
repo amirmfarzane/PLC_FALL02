@@ -4,8 +4,8 @@ grammar UTL;
 
 
 //VARS
-STATIC:'Static';
-SHARED:'Shared';
+STATIC:'static';
+SHARED:'shared';
 
 //Types
 BOOL : 'bool';
@@ -108,8 +108,6 @@ PLUS_PLUS: '++';
 MINUS_MINUS:'--';
 
 //Comparison Operators
-COMPARE_OP :
-    NEQ | EQ | GT | LT ;
 NEQ: '!=';
 EQ: '==';
 GT: '>';
@@ -157,7 +155,7 @@ statement : VarDeclaration {System.out.println("VarDec:"+...);}
 
 
 program:
-    (functionTotal)*
+    (functionTotal | (globalVarDeclaration))*
     mainBlock
     ;
 
@@ -178,7 +176,7 @@ functionDec:
     ;
 
 functionVarDec:
-    type ID {System.out.println("ArgumentDec: " + $ID.getText());}
+    pretype type ID {System.out.println("ArgumentDec: " + $ID.getText());}
     ;
 
 mainBlock: // check!!!!!
@@ -187,9 +185,10 @@ mainBlock: // check!!!!!
 
 statement:
     ((assignSmt  //| ( predicate SEMICOLON )
-    | returnSmt | functionCall | methodCall | tryStatement 
+    | returnSmt //| functionCall | methodCall
+    | tryStatement | (assignmentExpression SEMICOLON)
     | printSmt | forLoop | localVarDeclaration | ifStatement) 
-    SEMICOLON)
+    )
     ;
 
 
@@ -199,29 +198,10 @@ methodCall:
 
 
 
-//primaryExpression
-//    :
-//    LPAR expression RPAR
-//    | ID
-//    ;
 
-//postfixExpression
-//    : primaryExpression
-//    | postfixExpression LBRACKET (expression | bracedInitList) RBRACKET
-////    | postfixExpression LPAR expressionList? RPAR
-////    | (simpleTypeSpecifier | typeNameSpecifier) (
-////        LPAR expressionList? RPAR
-////        | bracedInitList
-////    )
-////    | postfixExpression (DOT | Arrow) (Template? idExpression | pseudoDestructorName)
-////    | postfixExpression (PlusPlus | MinusMinus)
-////    | (Dynamic_cast | Static_cast | Reinterpret_cast | Const_cast) Less theTypeId Greater LPAR expression RPAR
-////    | typeIdOfTheTypeId LPAR (expression | theTypeId) RPAR
-//    ;
 
-unaryOperator
-    :
-    | BITWISE_AND
+unaryOperator:
+    BITWISE_AND
     | BITWISE_OR
     | BITWISE_XOR
     | TILDE
@@ -351,6 +331,7 @@ theTypeId
 postfixExpression
     : assign_value
     | postfixExpression LBRACKET (expression | bracedInitList) RBRACKET
+    | builtInFunction LPAR initializerList? RPAR
     | postfixExpression LPAR initializerList? RPAR
     | (type ) (
         LPAR initializerList? RPAR
@@ -358,6 +339,18 @@ postfixExpression
     )
     | postfixExpression (DOT) (ID)
     | postfixExpression (PLUS_PLUS | MINUS_MINUS)
+    ;
+
+
+builtInFunction:
+    ORDER
+    |CONNECT
+    |OBSERVE
+    |TERMINATE
+    |GETCANDLE
+    |CLOSE
+    |OPEN
+    |ONSTART
     ;
 
 unaryExpression
@@ -429,7 +422,8 @@ condition :
     expression;
 
 ifStatement :
-    IF LPAR condition RPAR statement (ELSE statement)?
+    IF LPAR conditionalExpression RPAR (statement | LBRACE statement* RBRACE)
+    (ELSE (statement | LBRACE statement*RBRACE ))
     ;
 
 
@@ -448,17 +442,22 @@ variable:
     ID | ID LBRACKET expression RBRACKET
     ;
 
+globalVarDeclaration:
+        (varDeclaration
+        | arrayDeclaration)
+        ;
+
 localVarDeclaration:
      varDeclaration
     | arrayDeclaration
     ;
 
 varDeclaration:
-    type ID {System.out.println("VarDec: " + $ID.getText());} (ASSIGN expression )? 
+    pretype? type ID {System.out.println("VarDec: " + $ID.getText());} (ASSIGN expression )? SEMICOLON
     ;
 
 arrayDeclaration:
-    type LBRACKET INT_VALUE RBRACKET ID {System.out.println("VarDec: " + $ID.getText());}
+    pretype? type LBRACKET INT_VALUE RBRACKET ID {System.out.println("VarDec: " + $ID.getText());}
     (arrayInitialValue )? SEMICOLON
     ;
 
@@ -597,6 +596,11 @@ numericValue:
     ;
 
 
+pretype:
+    STATIC
+    | SHARED
+    ;
+
 
 type:
     BOOL
@@ -606,6 +610,8 @@ type:
     | CANDLE
     | TRADE
     | STRING
+    | ORDER
+    | TRADE
     ;
     
 assign_value:
@@ -613,7 +619,10 @@ assign_value:
     | TRUE
     | FALSE
     | ID
-    FLOAT_VALUE
+    |FLOAT_VALUE
+    | ZERO
+    | SELL
+    | BUY
     ;
 
 
