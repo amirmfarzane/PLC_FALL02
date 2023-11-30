@@ -50,10 +50,10 @@ EXCEPTION  : 'Exception';
 TEXT  : 'Text';
 
 DOT : '.';
-
+STRING_VAL:'"'[0-9a-zA-Z]*'"';
 SCHEDULE:'@schedule';
 
-MAIN: 'main';
+MAIN: 'main' | 'Main';
 BUY:'BUY';
 DIGITS:'Digits';
 SELL:'SELL';
@@ -66,6 +66,8 @@ HIGH  : 'High';
 CLOSE  : 'Close';
 OPEN  : 'Open';
 TIME : 'Tiem';
+CANDELES : 'candles';
+
 
 TRADE  : 'Trade';
 ORDER  : 'Order';
@@ -186,9 +188,9 @@ mainBlock: // check!!!!!
 statement:
     ((assignSmt  //| ( predicate SEMICOLON )
     | returnSmt //| functionCall | methodCall
-
+    |break_statment
     | tryStatement | (assignmentExpression SEMICOLON)
-    | printSmt | forLoop | localVarDeclaration | ifStatement )
+    | printSmt | forLoop | while_Loop | localVarDeclaration | ifStatement )
     )
     ;
 
@@ -196,9 +198,15 @@ forLoopStatement:
     (assignSmt  //| ( predicate SEMICOLON )
     | (assignmentExpression SEMICOLON?)
     | localVarDeclaration
+
     )
     ;
 
+
+break_statment:
+    BREAK SEMICOLON
+    | CONTINUE SEMICOLON
+    ;
 
 methodCall:
     ID DOT ID LPAR expression RPAR
@@ -341,6 +349,7 @@ postfixExpression
     | postfixExpression LBRACKET (expression | bracedInitList) RBRACKET
     | builtInFunction LPAR initializerList? RPAR
     | postfixExpression LPAR initializerList? RPAR
+    |
     | (type ) (
         LPAR initializerList? RPAR
         | bracedInitList
@@ -523,7 +532,10 @@ forLoop:
     LBRACE statement+ RBRACE
     ;
 
-
+while_Loop:
+   WHILE LPAR forLoopStatement  RPAR
+        ((LBRACE statement+ RBRACE) | statement)
+       ;
 
 tryStatement:
     TRY LBRACE statement RBRACE CATCH EXCEPTION ID LBRACE statement RBRACE
@@ -607,10 +619,14 @@ functionCall:
 
 value:
     numericValue
+    |stringVal
     | TRUE
     | FALSE
     | MINUS numericValue
     ;
+
+
+
 
 numericValue:
     INT_VALUE
@@ -651,6 +667,14 @@ assign_value:
 builtInVar:
     BID
     |ASK
+    |TIME
+    |OPEN
+    |CLOSE
+    |HIGH
+    |LOW
+    |VOLUME
+    |DIGITS
+    |CANDELES
     ;
 
 
