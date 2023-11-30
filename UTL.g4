@@ -199,7 +199,8 @@ statement:
 
 
 scheduleStatment:
-    SCHEDULE (LPAR schedule2Statement  RPAR | ID) (PARALLEL | PREORDER)
+    SCHEDULE {System.out.println("ConcurrencyControl:Schedule");}
+    (LPAR schedule2Statement  RPAR | ID) (PARALLEL | PREORDER)
      ( LPAR schedule2Statement RPAR | ID) SEMICOLON
     ;
 
@@ -218,8 +219,8 @@ forLoopStatement:
 
 
 break_statment:
-    BREAK SEMICOLON
-    | CONTINUE SEMICOLON
+    (BREAK SEMICOLON {System.out.println("Control:break";})
+    | (CONTINUE SEMICOLON {System.out.println("Control:continue";})
     ;
 
 methodCall:
@@ -464,13 +465,15 @@ condition :
     expression;
 
 ifStatement :
-    IF LPAR conditionalExpression RPAR (statement | LBRACE statement* RBRACE)
-    (ELSE (statement | LBRACE statement*RBRACE ))?
+    IF {System.out.println("Conditional:if";)} 
+    LPAR conditionalExpression RPAR (statement | LBRACE statement* RBRACE)
+    (elseStatment)?
     ;
 
 
-
-
+elseStatment:
+    ELSE {System.out.println("Conditional:else";)}(statement | LBRACE statement*RBRACE )
+    ;
 
 
 
@@ -495,11 +498,11 @@ localVarDeclaration:
     ;
 
 varDeclaration:
-    pretype? type ID {System.out.println("VarDec: " + $ID.getText());} (ASSIGN expression )? SEMICOLON
+    pretype? type ID {System.out.println("VarDec:" + $ID.getText());} (ASSIGN expression )? SEMICOLON
     ;
 
 arrayDeclaration:
-    pretype? type LBRACKET INT_VALUE RBRACKET ID {System.out.println("VarDec: " + $ID.getText());}
+    pretype? type LBRACKET INT_VALUE RBRACKET ID {System.out.println("ArrayDec:" + $ID.getText() + ":"+ $INT_VALUE.getText());}
     (arrayInitialValue )? SEMICOLON
     ;
 
@@ -543,12 +546,13 @@ returnSmt:
 forLoop:
     {System.out.println("Loop: for");}
 
-    FOR LPAR forLoopStatement conditionalExpression SEMICOLON forLoopStatement RPAR
+    FOR {System.out.println("Loop:for"}
+    LPAR forLoopStatement conditionalExpression SEMICOLON forLoopStatement RPAR
     LBRACE statement+ RBRACE
     ;
 
 while_Loop:
-   WHILE LPAR forLoopStatement  RPAR
+   WHILE {System.out.println("Loop:while"} LPAR forLoopStatement  RPAR
         ((LBRACE statement+ RBRACE) | statement)
        ;
 
