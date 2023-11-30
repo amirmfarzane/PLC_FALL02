@@ -21,7 +21,7 @@ VOID : 'void';
 //Types Vals
 INT_VALUE : [1-9][0-9]*;
 ZERO : '0';
-FLOAT_VALUE : [1-9][0-9]'.'[0-9]*;
+FLOAT_VALUE : ([0-9]*[.])?[0-9]+;
 
 TRUE: 'true';
 FALSE: 'false';
@@ -359,15 +359,15 @@ theTypeId
 
 
 postfixExpression
-    : ID
+    :(type ) (
+             LPAR initializerList? RPAR
+             | bracedInitList
+         )
+    | ID
     | postfixExpression LBRACKET (expression | bracedInitList) RBRACKET
     | builtInFunction LPAR initializerList? RPAR
     | postfixExpression LPAR initializerList? RPAR
-    |
-    | (type ) (
-        LPAR initializerList? RPAR
-        | bracedInitList
-    )
+
     | postfixExpression (DOT) (ID | builtInVar)
     | postfixExpression (PLUS_PLUS | MINUS_MINUS)
     ;
@@ -492,6 +492,7 @@ globalVarDeclaration:
 localVarDeclaration:
      varDeclaration
     | arrayDeclaration
+    | THROW expression SEMICOLON
     ;
 
 varDeclaration:
@@ -665,6 +666,8 @@ type:
     | STRING
     | ORDER
     | TRADE
+    |EXCEPTION
+    |THROW
     ;
 
 assign_value:
@@ -692,5 +695,4 @@ builtInVar:
     |DIGITS
     |CANDELES
     ;
-
 
