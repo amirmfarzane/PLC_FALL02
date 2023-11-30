@@ -14,17 +14,6 @@ program:
 
 // Parser rules
 
-// TODO: Complete the parser rules
-/*Ex:
-statement : VarDeclaration {System.out.println("VarDec:"+...);}
-          | ArrayDeclaration ...
-          | ...
-          ;
-*/
-
-
-
-
 
 
 functionTotal:
@@ -82,14 +71,12 @@ break_statment:
     | (CONTINUE {System.out.println("Control:continue");} SEMICOLON )
     ;
 
-methodCall:
-    ID DOT ID LPAR expression RPAR
-    ;
-
 unaryOperator:
     BITWISE_AND
     | BITWISE_OR
     | BITWISE_XOR
+    |PLUS_PLUS
+    |MINUS_MINUS
     | TILDE
     | NOT
     ;
@@ -145,10 +132,6 @@ attributeSpecifier
 
 attributeSpecifierSeq
     : attributeSpecifier+
-    ;
-
-trailingTypeSpecifierSeq
-    : type+ attributeSpecifierSeq?
     ;
 
 typeSpecifierSeq
@@ -223,6 +206,9 @@ postfixExpression
                  )postfixExpressionTemp
     | ID postfixExpressionTemp
     | builtInFunction LPAR initializerList? RPAR postfixExpressionTemp
+    |  (DOT) (ID | builtInVar)postfixExpressionTemp
+    |  LPAR initializerList? RPAR
+    |  LBRACKET (expression | bracedInitList) RBRACKET
     ;
 
 postfixExpressionTemp
@@ -232,12 +218,6 @@ postfixExpressionTemp
     |  LPAR initializerList? RPAR postfixExpressionTemp
     |  LBRACKET (expression | bracedInitList) RBRACKET postfixExpressionTemp
     ;
-
-
-
-
-
-
 
 functionCall:
      ID DOT (ID | builtInVar) postfixExpressionTemp
@@ -259,20 +239,16 @@ builtInFunction:
     |REFRESHRATE
     ;
 
-unaryExpression
+postUnaryExpression
     :
-    assign_value
-    |postfixExpression
-    |(PLUS_PLUS | MINUS_MINUS | unaryOperator )
+   assign_value (unaryOperator)?
     ;
 
-//typeSpecifierSeq
-//    : type+ attributeSpecifierSeq?
-//    ;
-//
-//theTypeId
-//    //: typeSpecifierSeq abstractDeclarator?
-//    ;
+unaryExpression
+    :
+    (unaryOperator )? postUnaryExpression
+    |postfixExpression
+    ;
 
 castExpression:
     unaryExpression
@@ -289,8 +265,7 @@ additiveExpression
 
 shiftExpression
     :
-    LPAR shiftExpression RPAR
-    |additiveExpression (shiftOperator additiveExpression)*
+    additiveExpression (shiftOperator additiveExpression)*
     ;
 
 shiftOperator
@@ -300,29 +275,28 @@ shiftOperator
 
 relationalExpression
     :
-    LPAR relationalExpression RPAR
-    |shiftExpression ((LT | GT ) shiftExpression)*
+    shiftExpression ((LT | GT ) shiftExpression)*
     ;
 
 equalityExpression
     :
-    LPAR equalityExpression RPAR
-    |relationalExpression ((EQ | NEQ) relationalExpression)*
+    relationalExpression ((EQ | NEQ) relationalExpression)*
+    ;
+
+bitwiseExpression:
+    equalityExpression (bitwiseOperators equalityExpression)*
     ;
 
 logicalAndExpression:
-    LPAR logicalAndExpression RPAR
-    |equalityExpression (AND equalityExpression)*
+    bitwiseExpression (AND bitwiseExpression)*
     ;
 
 logicalOrExpression:
-    LPAR  logicalOrExpression RPAR
-    |logicalAndExpression (OR logicalAndExpression)*
+    logicalAndExpression (OR logicalAndExpression)*
     ;
 
 conditionalExpression:
-    LPAR conditionalExpression RPAR
-    | logicalOrExpression
+    logicalOrExpression
 //     ( expression Colon assignmentExpression)?
     ;
 
@@ -332,9 +306,6 @@ assignmentExpression
 expression
     : assignmentExpression (COMMA assignmentExpression)*
     ;
-
-condition :
-    expression;
 
 ifStatement :
     IF {System.out.println("Conditional:if");}
@@ -390,24 +361,6 @@ arrayList:
 
 printSmt:
     PRINT {System.out.println("Built-in: print");} LPAR initializerList? RPAR SEMICOLON
-    ;
-
-printExpr:
-    variable
-    | query
-    ;
-
-query:
-      queryType1
-     | queryType2
-    ;
-
-queryType1:
-    //LBRACKET QUARYMARK predicateIdentifier LPAR variable RPAR RBRACKET
-    ;
-
-queryType2:
-    //LBRACKET predicateIdentifier LPAR QUARYMARK RPAR RBRACKET
     ;
 
 returnSmt:
@@ -480,6 +433,12 @@ assign_value:
     | SELL
     | BUY
     | STRING_VAL
+    ;
+
+bitwiseOperators:
+    BITWISE_XOR
+    | BITWISE_AND
+    | BITWISE_OR
     ;
 
 builtInVar:
