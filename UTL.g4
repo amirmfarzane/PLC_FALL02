@@ -178,9 +178,14 @@ mainBlock: // check!!!!!
 
 statement:
     assignSmt | ( predicate SEMICOLON )
-    | implication | returnSmt
+    | returnSmt | functionCall
     | printSmt | forLoop | localVarDeclaration
+    | methodCall | tryStatement
     ;
+
+
+
+
 
 assignSmt:
     variable ASSIGN expression SEMICOLON
