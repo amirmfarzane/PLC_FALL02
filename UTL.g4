@@ -186,7 +186,7 @@ mainBlock: // check!!!!!
 
 statement:
     assignSmt  //| ( predicate SEMICOLON )
-    | returnSmt | functionCall | methodCall
+    | returnSmt | functionCall | methodCall | tryStatement
     | printSmt | forLoop | localVarDeclaration | ifStatement
     ;
 
@@ -358,6 +358,15 @@ forLoop:
     {System.out.println("Loop: for");} FOR LPAR ID COLON ID RPAR
     LBRACE ((statement)*) RBRACE
     ;
+
+
+
+tryStatement:
+    TRY LBRACE statement RBRACE CATCH EXCEPTION ID LBRACE statement RBRACE
+    ;
+
+
+
 
 // predicate:
 //     predicateIdentifier LPAR variable RPAR
