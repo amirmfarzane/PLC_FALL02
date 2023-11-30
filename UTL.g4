@@ -19,15 +19,11 @@ VOID : 'void';
 
 
 //Types Vals
-NATURAL_DIGIT : [1-9];
-DIGIT:[0-9];
+NATURAL_DIGIT : [1-9][0-9]*;
 ZERO : '0';
 
-INT_VAL : NATURAL_DIGIT DIGIT*;
-FLOAT_VAL: INT_VAL '.' DIGIT+ | '0.' DIGIT*;
-//DOUBLE_VAL :
-ID : [a-z][a-zA-Z0-9_]*;
-
+TRUE: 'true';
+FALSE: 'false';
 
 //Loops
 FOR: 'for';
@@ -49,8 +45,10 @@ THROW:'throw';
 RETURN:'return';
 
 EXCEPTION  : 'Exception';
-TYPE:'bool' | 'int' | 'double' | 'string';
+
 TEXT  : 'Text';
+
+DOT : '.';
 
 SCHEDULE:'@schedule';
 
@@ -81,6 +79,13 @@ PRINT  : 'Print';
 PREORDER : 'Preorder';
 PARALLEL : 'parallel';
 
+
+
+//DOUBLE_VAL :
+ID : [a-z][a-zA-Z0-9_]*;
+
+
+
 LPAR: '(';
 RPAR: ')';
 COLON: ':';
@@ -90,17 +95,20 @@ RBRACE: '}';
 LBRACKET: '[';
 RBRACKET: ']';
 SEMICOLON: ';';
+QUESTION: '?';
 
 //Arithmetic Operators
 PLUS: '+';
 MINUS: '-';
-MULT: '*';
+MUL: '*';
 DIV: '/';
 MOD: '%';
 PLUS_PLUS: '++';
 MINUS_MINUS:'--';
 
 //Comparison Operators
+COMPARE_OP :
+    NEQ | EQ | GT | LT ;
 NEQ: '!=';
 EQ: '==';
 GT: '>';
@@ -115,7 +123,7 @@ AND: '&&';
 NOT: '!';
 
 //FOR NUMBERS
-COMP: '~';
+TILDE: '~';
 RIGHT_SHIFT:'>>';
 LEFT_SHIFT:'<<';
 BITWISE_AND:'&';
@@ -177,11 +185,114 @@ mainBlock: // check!!!!!
     ;
 
 statement:
-    assignSmt | ( predicate SEMICOLON )
-    | returnSmt | functionCall
-    | printSmt | forLoop | localVarDeclaration
-    | methodCall | tryStatement
+    assignSmt  //| ( predicate SEMICOLON )
+    | returnSmt | functionCall | methodCall
+    | printSmt | forLoop | localVarDeclaration | ifStatement
     ;
+
+
+methodCall:
+    ID DOT ID // .....
+    ;
+
+
+
+//primaryExpression
+//    :
+//    LPAR expression RPAR
+//    | ID
+//    ;
+
+//postfixExpression
+//    : primaryExpression
+//    | postfixExpression LeftBracket (expression | bracedInitList) RightBracket
+////    | postfixExpression LeftParen expressionList? RightParen
+////    | (simpleTypeSpecifier | typeNameSpecifier) (
+////        LeftParen expressionList? RightParen
+////        | bracedInitList
+////    )
+////    | postfixExpression (Dot | Arrow) (Template? idExpression | pseudoDestructorName)
+////    | postfixExpression (PlusPlus | MinusMinus)
+////    | (Dynamic_cast | Static_cast | Reinterpret_cast | Const_cast) Less theTypeId Greater LeftParen expression RightParen
+////    | typeIdOfTheTypeId LeftParen (expression | theTypeId) RightParen
+//    ;
+
+unaryOperator
+    :
+    | BITWISE_AND
+    | BITWISE_OR
+    | BITWISE_XOR
+    | TILDE
+    | NOT
+    ;
+
+unaryExpression
+      :
+//    : postfixExpression
+//    | (PlusPlus | MinusMinus | unaryOperator ) unaryExpression
+    unaryOperator
+    ;
+
+castExpression:
+//    unaryExpression
+//    | LPAR theTypeId RPAR castExpression
+   ;
+
+multiplicativeExpression
+    : castExpression ((MUL | DIV | MOD) castExpression)*
+    ;
+
+additiveExpression
+    : multiplicativeExpression ((PLUS | MINUS) multiplicativeExpression)*
+    ;
+
+shiftExpression
+    : additiveExpression (shiftOperator additiveExpression)*
+    ;
+
+shiftOperator
+    : RIGHT_SHIFT
+    | LEFT_SHIFT
+    ;
+
+relationalExpression
+    : shiftExpression ((LT | GT ) shiftExpression)*
+    ;
+
+equalityExpression
+    : relationalExpression ((EQ | NEQ) relationalExpression)*
+    ;
+
+logicalAndExpression
+    : equalityExpression (AND equalityExpression)*
+    ;
+
+logicalOrExpression
+    : logicalAndExpression (OR logicalAndExpression)*
+    ;
+
+conditionalExpression
+    : logicalOrExpression
+//     ( expression Colon assignmentExpression)?
+    ;
+
+assignmentExpression
+    : conditionalExpression;
+
+expression
+    : assignmentExpression (COMMA assignmentExpression)*
+    ;
+
+condition :
+    expression;
+
+ifStatement :
+    IF LPAR condition RPAR statement (ELSE statement)?
+    ;
+
+
+
+
 
 
 
@@ -205,7 +316,7 @@ varDeclaration:
     ;
 
 arrayDeclaration:
-    type LBRACKET INT_NUMBER RBRACKET ID {System.out.println("VarDec: " + $ID.getText());}
+    type LBRACKET NATURAL_DIGIT RBRACKET ID {System.out.println("VarDec: " + $ID.getText());}
     (arrayInitialValue )? SEMICOLON
     ;
 
@@ -232,11 +343,11 @@ query:
     ;
 
 queryType1:
-    LBRACKET QUARYMARK predicateIdentifier LPAR variable RPAR RBRACKET
+    //LBRACKET QUARYMARK predicateIdentifier LPAR variable RPAR RBRACKET
     ;
 
 queryType2:
-    LBRACKET predicateIdentifier LPAR QUARYMARK RPAR RBRACKET
+    //LBRACKET predicateIdentifier LPAR QUARYMARK RPAR RBRACKET
     ;
 
 returnSmt:
@@ -248,81 +359,77 @@ forLoop:
     LBRACE ((statement)*) RBRACE
     ;
 
-predicate:
-    predicateIdentifier LPAR variable RPAR
-    ;
+// predicate:
+//     predicateIdentifier LPAR variable RPAR
+//     ;
 
-implication:
-    {System.out.println("Implication");} LPAR expression RPAR ARROW LPAR ((statement)+) RPAR
-    ;
+//expression:
+//    andExpr expression2
+//    ;
+//
+//expression2:
+//    OR andExpr expression2 {System.out.println("Operator: " + $OR.getText());}
+//    |
+//    ;
+//
+//andExpr:
+//    eqExpr andExpr2
+//    ;
+//
+//andExpr2:
+//    AND eqExpr andExpr2 {System.out.println("Operator: " + $AND.getText());}
+//    |
+//    ;
+//
+//eqExpr:
+//    compExpr eqExpr2
+//    ;
+//
+//eqExpr2:
+//    (op = ( EQ | NEQ )) compExpr eqExpr2 {System.out.println("Operator: " + $op.getText());}
+//    |
+//    ;
+//
+//compExpr:
+//    additive compExpr2
+//    ;
+//
+//compExpr2:
+//    (op = ( LT | LTE | GT | GTE)) additive compExpr2 {System.out.println("Operator: " + $op.getText());}
+//    |
+//    ;
+//
+//additive:
+//    multicative additive2
+//    ;
+//
+//additive2:
+//    (op = ( PLUS | MINUS )) multicative additive2 {System.out.println("Operator: " + $op.getText());}
+//    |
+//    ;
+//
+//multicative:
+//    unary multicative2
+//    ;
+//
+//multicative2:
+//    (op = ( MULT | MOD | DIV )) unary multicative2 {System.out.println("Operator: " + $op.getText());}
+//    |
+//    ;
 
-expression:
-    andExpr expression2
-    ;
-
-expression2:
-    OR andExpr expression2 {System.out.println("Operator: " + $OR.getText());}
-    |
-    ;
-
-andExpr:
-    eqExpr andExpr2
-    ;
-
-andExpr2:
-    AND eqExpr andExpr2 {System.out.println("Operator: " + $AND.getText());}
-    |
-    ;
-
-eqExpr:
-    compExpr eqExpr2
-    ;
-
-eqExpr2:
-    (op = ( EQ | NEQ )) compExpr eqExpr2 {System.out.println("Operator: " + $op.getText());}
-    |
-    ;
-
-compExpr:
-    additive compExpr2
-    ;
-
-compExpr2:
-    (op = ( LT | LTE | GT | GTE)) additive compExpr2 {System.out.println("Operator: " + $op.getText());}
-    |
-    ;
-
-additive:
-    multicative additive2
-    ;
-
-additive2:
-    (op = ( PLUS | MINUS )) multicative additive2 {System.out.println("Operator: " + $op.getText());}
-    |
-    ;
-
-multicative:
-    unary multicative2
-    ;
-
-multicative2:
-    (op = ( MULT | MOD | DIV )) unary multicative2 {System.out.println("Operator: " + $op.getText());}
-    |
-    ;
-
-unary:
-    other
-    |
-     (op = ( PLUS | MINUS | NOT )) {System.out.println("Operator: " + $op.getText());} other
-    ;
-
-other:
-    LPAR expression RPAR | variable | value
-    | queryType1 | functionCall
-    ;
+//unary:
+//    other
+//    |
+//     (op = ( PLUS | MINUS | NOT )) {System.out.println("Operator: " + $op.getText());} other
+//    ;
+//
+//other:
+//    LPAR expression RPAR | variable | value
+//    | queryType1 | functionCall
+//    ;
 
 functionCall:
-    {System.out.println("FunctionCall");} ID LPAR (expression (COMMA expression)*)? RPAR
+    ID LPAR (expression (COMMA expression)*)? RPAR {System.out.println("FunctionCall");}
     ;
 
 value:
@@ -333,23 +440,23 @@ value:
     ;
 
 numericValue:
-    INT_NUMBER
-    | FLOAT_NUMBER
+    NATURAL_DIGIT
+    | FLOAT
+    | ZERO
     ;
 
-predicateIdentifier:
-    PREDICATE_IDENTIFIER {System.out.println("Predicate: " + $PREDICATE_IDENTIFIER.getText());}
-    ;
+// predicateIdentifier:
+//     PREDICATE_IDENTIFIER {System.out.println("Predicate: " + $PREDICATE_IDENTIFIER.getText());}
+//     ;
 
 type:
-    BOOLEAN
+    BOOL
     | INT
     | FLOAT
     | CANDLE
     | TRADE
     | STRING
     ;
-
 
 
 
