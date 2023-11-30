@@ -38,7 +38,7 @@ ELSE : 'else';
 
 
 TRY : 'try';
-CATCH:'cartch';
+CATCH:'catch';
 
 ONININT:'OnInit';
 ONSTART:'OnStart';
@@ -190,7 +190,7 @@ statement:
     | returnSmt //| functionCall | methodCall
     |break_statment
     | tryStatement | (assignmentExpression SEMICOLON)
-    | printSmt | forLoop | while_Loop | localVarDeclaration | ifStatement )
+    | forLoop | while_Loop | localVarDeclaration | ifStatement )
     )
     ;
 
@@ -366,6 +366,7 @@ builtInFunction:
     |TERMINATE
     |GETCANDLE
     |CLOSE
+    |PRINT
     |OPEN
     |ONSTART
     |REFRESHRATE
@@ -538,7 +539,7 @@ while_Loop:
        ;
 
 tryStatement:
-    TRY LBRACE statement RBRACE CATCH EXCEPTION ID LBRACE statement RBRACE
+    TRY LBRACE statement* RBRACE CATCH EXCEPTION ID LBRACE statement* RBRACE
     ;
 
 
@@ -619,7 +620,7 @@ functionCall:
 
 value:
     numericValue
-    |stringVal
+    |STRING_VAL
     | TRUE
     | FALSE
     | MINUS numericValue
@@ -662,6 +663,7 @@ assign_value:
     | ZERO
     | SELL
     | BUY
+    | STRING_VAL
     ;
 
 builtInVar:
