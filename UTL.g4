@@ -166,15 +166,15 @@ functionTotal:
 
 
 func_on_start:
-        VOID ONSTART LPAR TRADE ID RPAR (THROW EXCEPTION)? LBRACE ((statement)+) RBRACE;
+        VOID ONSTART LPAR TRADE ID RPAR (THROW EXCEPTION)? LBRACE ((statement)*) RBRACE;
 
 func_on_init:
-        VOID ONININT LPAR TRADE ID RPAR (THROW EXCEPTION)? LBRACE ((statement)+) RBRACE;
+        VOID ONININT LPAR TRADE ID RPAR (THROW EXCEPTION)? LBRACE ((statement)*) RBRACE;
 
 functionDec:
     (type | VOID) ID {System.out.println("FunctionDec: " + $ID.getText());} //chap
     LPAR (functionVarDec (COMMA functionVarDec)*)? RPAR (THROW EXCEPTION)?
-    LBRACE ((statement)+) RBRACE
+    LBRACE ((statement)*) RBRACE
     ;
 
 functionVarDec:
@@ -182,13 +182,14 @@ functionVarDec:
     ;
 
 mainBlock: // check!!!!!
-    {System.out.println("MainBody");}(INT | VOID) MAIN LPAR RPAR LBRACE (statement)+ RBRACE
+    {System.out.println("MainBody");}(INT | VOID) MAIN LPAR RPAR LBRACE (statement)* RBRACE
     ;
 
 statement:
-    assignSmt  //| ( predicate SEMICOLON )
-    | returnSmt | functionCall | methodCall | tryStatement
-    | printSmt | forLoop | localVarDeclaration | ifStatement
+    ((assignSmt  //| ( predicate SEMICOLON )
+    | returnSmt | functionCall | methodCall | tryStatement 
+    | printSmt | forLoop | localVarDeclaration | ifStatement) 
+    SEMICOLON)
     ;
 
 
@@ -235,8 +236,8 @@ unaryExpression
     ;
 
 castExpression:
-//    unaryExpression
-//    | LPAR theTypeId RPAR castExpression
+    unaryExpression
+    //| LPAR theTypeId RPAR castExpression
    ;
 
 multiplicativeExpression
@@ -264,16 +265,16 @@ equalityExpression
     : relationalExpression ((EQ | NEQ) relationalExpression)*
     ;
 
-logicalAndExpression
-    : equalityExpression (AND equalityExpression)*
+logicalAndExpression:
+    equalityExpression (AND equalityExpression)*
     ;
 
-logicalOrExpression
-    : logicalAndExpression (OR logicalAndExpression)*
+logicalOrExpression:
+    logicalAndExpression (OR logicalAndExpression)*
     ;
 
-conditionalExpression
-    : logicalOrExpression
+conditionalExpression:
+    logicalOrExpression
 //     ( expression Colon assignmentExpression)?
     ;
 
@@ -313,7 +314,7 @@ localVarDeclaration:
     ;
 
 varDeclaration:
-    type ID {System.out.println("VarDec: " + $ID.getText());} (ASSIGN expression )? SEMICOLON
+    type ID {System.out.println("VarDec: " + $ID.getText());} (ASSIGN expression )? 
     ;
 
 arrayDeclaration:
@@ -455,9 +456,7 @@ numericValue:
     | ZERO
     ;
 
-// predicateIdentifier:
-//     PREDICATE_IDENTIFIER {System.out.println("Predicate: " + $PREDICATE_IDENTIFIER.getText());}
-//     ;
+
 
 type:
     BOOL
