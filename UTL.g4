@@ -50,8 +50,10 @@ EXCEPTION  : 'Exception';
 TEXT  : 'Text';
 
 DOT : '.';
-STRING_VAL:'"'[0-9a-zA-Z]*'"';
+//STRING_VAL:'"'[0-9a-zA-Z]*'"';
 SCHEDULE:'@schedule';
+STRING_VAL : '"' ( ~[\\"\n\r] | '\\' [\\"] )* '"'
+               ;
 
 MAIN: 'main' | 'Main';
 BUY:'BUY';
@@ -619,12 +621,11 @@ functionCall:
 
 value:
     numericValue
-    |stringVal
+    |STRING_VAL
     | TRUE
     | FALSE
     | MINUS numericValue
     ;
-
 
 
 
@@ -655,6 +656,7 @@ type:
 
 assign_value:
     INT_VALUE
+    |STRING_VAL
     | TRUE
     | FALSE
     | ID
@@ -676,6 +678,5 @@ builtInVar:
     |DIGITS
     |CANDELES
     ;
-
 
 
