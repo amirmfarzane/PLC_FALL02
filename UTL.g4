@@ -81,7 +81,7 @@ TERMINATE  : 'Terminate';
 CONNECT  : 'Connect';
 OBSERVE  : 'Observe';
 PRINT  : 'Print';
-PREORDER : 'Preorder';
+PREORDER : 'preorder';
 PARALLEL : 'parallel';
 
 
@@ -191,9 +191,21 @@ statement:
     ((assignSmt  //| ( predicate SEMICOLON )
     | returnSmt //| functionCall | methodCall
     |break_statment
-    | tryStatement | (assignmentExpression SEMICOLON)
+    | tryStatement | (assignmentExpression SEMICOLON) | scheduleStatment
     | forLoop | while_Loop | localVarDeclaration | ifStatement )
     )
+    ;
+
+
+
+scheduleStatment:
+    SCHEDULE (LPAR schedule2Statement  RPAR | ID) (PARALLEL | PREORDER)
+     ( LPAR schedule2Statement RPAR | ID) SEMICOLON
+    ;
+
+schedule2Statement:
+    (LPAR schedule2Statement  RPAR | ID) (PARALLEL | PREORDER)
+         ( LPAR schedule2Statement RPAR | ID)
     ;
 
 forLoopStatement:
