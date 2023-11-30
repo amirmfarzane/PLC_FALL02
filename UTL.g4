@@ -19,9 +19,9 @@ VOID : 'void';
 
 
 //Types Vals
-NATURAL_DIGIT : [1-9][0-9]*;
+INT_VALUE : [1-9][0-9]*;
 ZERO : '0';
-DOUBLE_NUM : [1-9][0-9]'.'[0-9]*;
+FLOAT_VALUE : [1-9][0-9]'.'[0-9]*;
 
 TRUE: 'true';
 FALSE: 'false';
@@ -207,16 +207,16 @@ methodCall:
 
 //postfixExpression
 //    : primaryExpression
-//    | postfixExpression LeftBracket (expression | bracedInitList) RightBracket
-////    | postfixExpression LeftParen expressionList? RightParen
+//    | postfixExpression LBRACKET (expression | bracedInitList) RBRACKET
+////    | postfixExpression LPAR expressionList? RPAR
 ////    | (simpleTypeSpecifier | typeNameSpecifier) (
-////        LeftParen expressionList? RightParen
+////        LPAR expressionList? RPAR
 ////        | bracedInitList
 ////    )
-////    | postfixExpression (Dot | Arrow) (Template? idExpression | pseudoDestructorName)
+////    | postfixExpression (DOT | Arrow) (Template? idExpression | pseudoDestructorName)
 ////    | postfixExpression (PlusPlus | MinusMinus)
-////    | (Dynamic_cast | Static_cast | Reinterpret_cast | Const_cast) Less theTypeId Greater LeftParen expression RightParen
-////    | typeIdOfTheTypeId LeftParen (expression | theTypeId) RightParen
+////    | (Dynamic_cast | Static_cast | Reinterpret_cast | Const_cast) Less theTypeId Greater LPAR expression RPAR
+////    | typeIdOfTheTypeId LPAR (expression | theTypeId) RPAR
 //    ;
 
 unaryOperator
@@ -228,16 +228,156 @@ unaryOperator
     | NOT
     ;
 
-unaryExpression
-      :
-//    : postfixExpression
-//    | (PlusPlus | MinusMinus | unaryOperator ) unaryExpression
-    unaryOperator
+initializerClause
+    : assignmentExpression
+    | bracedInitList
     ;
+
+initializerList
+    : initializerClause (COMMA initializerClause)*
+    ;
+
+bracedInitList
+    : LBRACE (initializerList COMMA?)? RBRACE
+    ;
+
+constantExpression
+    : conditionalExpression
+    ;
+
+alignmentspecifier
+    : LPAR (theTypeId | constantExpression)RPAR
+    ;
+
+balancedtoken
+    : LPAR balancedTokenSeq RPAR
+    | LBRACKET balancedTokenSeq RBRACKET
+    | LBRACE balancedTokenSeq RBRACE
+    | ~(LPAR | RPAR | LBRACE | RBRACE | LBRACKET | RBRACKET)+
+    ;
+
+balancedTokenSeq
+    : balancedtoken+
+    ;
+
+attributeArgumentClause
+    : LPAR balancedTokenSeq? RPAR
+    ;
+
+attribute
+    : ID attributeArgumentClause?
+    ;
+
+attributeList
+    : attribute (COMMA attribute)*
+    ;
+
+attributeSpecifier
+    : LBRACKET LBRACKET attributeList? RBRACKET RBRACKET
+    | alignmentspecifier
+    ;
+
+attributeSpecifierSeq
+    : attributeSpecifier+
+    ;
+
+trailingTypeSpecifierSeq
+    : type+ attributeSpecifierSeq?
+    ;
+
+typeSpecifierSeq
+    : type+ attributeSpecifierSeq?
+    ;
+
+declSpecifier
+    : STATIC
+    | type
+    ;
+
+declSpecifierSeq
+    : declSpecifier+? attributeSpecifierSeq?
+    ;
+
+noPointerDeclarator
+    : ID attributeSpecifierSeq?
+    | noPointerDeclarator (
+        parametersAndQualifiers
+        | LBRACKET constantExpression? RBRACKET attributeSpecifierSeq?
+    )
+    ;
+
+declarator
+    : noPointerDeclarator parametersAndQualifiers ID
+    ;
+
+parameterDeclaration
+    : attributeSpecifierSeq? declSpecifierSeq (declarator | abstractDeclarator?) (
+        ASSIGN initializerClause
+    )?
+    ;
+
+parameterDeclarationList
+    : parameterDeclaration (COMMA parameterDeclaration)*
+    ;
+
+parameterDeclarationClause
+    : parameterDeclarationList (COMMA?)
+    ;
+
+parametersAndQualifiers
+    : LPAR parameterDeclarationClause? RPAR attributeSpecifierSeq?
+    //cvqualifierseq? refqualifier? exceptionSpecification?
+    ;
+
+noPointerAbstractDeclarator
+    : noPointerAbstractDeclarator (
+        parametersAndQualifiers
+        | noPointerAbstractDeclarator LBRACKET constantExpression? RBRACKET attributeSpecifierSeq?
+    )
+    | parametersAndQualifiers
+    | LBRACKET constantExpression? RBRACKET attributeSpecifierSeq?
+    ;
+
+abstractDeclarator
+//    : pointerAbstractDeclarator
+    : noPointerAbstractDeclarator? parametersAndQualifiers type
+    ;
+
+theTypeId
+    : typeSpecifierSeq abstractDeclarator?
+    ;
+
+
+postfixExpression
+    : assign_value
+    | postfixExpression LBRACKET (expression | bracedInitList) RBRACKET
+    | postfixExpression LPAR initializerList? RPAR
+    | (type ) (
+        LPAR initializerList? RPAR
+        | bracedInitList
+    )
+    | postfixExpression (DOT) (ID)
+    | postfixExpression (PLUS_PLUS | MINUS_MINUS)
+    ;
+
+unaryExpression
+    :
+    
+    postfixExpression
+    |(PLUS_PLUS | MINUS_MINUS | unaryOperator )
+    ;
+
+//typeSpecifierSeq
+//    : type+ attributeSpecifierSeq?
+//    ;
+//
+//theTypeId
+//    //: typeSpecifierSeq abstractDeclarator?
+//    ;
 
 castExpression:
     unaryExpression
-    //| LPAR theTypeId RPAR castExpression
+    | LPAR theTypeId RPAR castExpression
    ;
 
 multiplicativeExpression
@@ -318,7 +458,7 @@ varDeclaration:
     ;
 
 arrayDeclaration:
-    type LBRACKET NATURAL_DIGIT RBRACKET ID {System.out.println("VarDec: " + $ID.getText());}
+    type LBRACKET INT_VALUE RBRACKET ID {System.out.println("VarDec: " + $ID.getText());}
     (arrayInitialValue )? SEMICOLON
     ;
 
@@ -451,7 +591,7 @@ value:
     ;
 
 numericValue:
-    NATURAL_DIGIT
+    INT_VALUE
     | FLOAT
     | ZERO
     ;
@@ -467,8 +607,14 @@ type:
     | TRADE
     | STRING
     ;
-
-
+    
+assign_value:
+    INT_VALUE
+    | TRUE
+    | FALSE
+    | ID
+    FLOAT_VALUE
+    ;
 
 
 
