@@ -83,7 +83,7 @@ PARALLEL : 'parallel';
 
 
 //DOUBLE_VAL :
-ID : [a-z][a-zA-Z0-9_]*;
+ID : [a-zA-Z_][a-zA-Z0-9_]*;
 
 
 
@@ -330,7 +330,7 @@ theTypeId
 
 
 postfixExpression
-    : assign_value
+    : ID
     | postfixExpression LBRACKET (expression | bracedInitList) RBRACKET
     | builtInFunction LPAR initializerList? RPAR
     | postfixExpression LPAR initializerList? RPAR
@@ -338,7 +338,7 @@ postfixExpression
         LPAR initializerList? RPAR
         | bracedInitList
     )
-    | postfixExpression (DOT) (ID)
+    | postfixExpression (DOT) (ID | builtInVar)
     | postfixExpression (PLUS_PLUS | MINUS_MINUS)
     ;
 
@@ -357,8 +357,8 @@ builtInFunction:
 
 unaryExpression
     :
-    
-    postfixExpression
+    assign_value
+    |postfixExpression
     |(PLUS_PLUS | MINUS_MINUS | unaryOperator )
     ;
 
@@ -465,6 +465,7 @@ arrayDeclaration:
 
 arrayInitialValue:
     ASSIGN arrayList
+    | ASSIGN postfixExpression // check postfix!!!!!!
     ;
 
 arrayList:
@@ -627,7 +628,10 @@ assign_value:
     | BUY
     ;
 
-
+builtInVar:
+    BID
+    |ASK
+    ;
 
 
 
