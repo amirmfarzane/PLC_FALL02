@@ -186,6 +186,7 @@ mainBlock: // check!!!!!
 statement:
     ((assignSmt  //| ( predicate SEMICOLON )
     | returnSmt //| functionCall | methodCall
+
     | tryStatement | (assignmentExpression SEMICOLON)
     | printSmt | forLoop | localVarDeclaration | ifStatement) 
     )
@@ -351,6 +352,7 @@ builtInFunction:
     |CLOSE
     |OPEN
     |ONSTART
+    |REFRESHRATE
     ;
 
 unaryExpression
@@ -423,7 +425,7 @@ condition :
 
 ifStatement :
     IF LPAR conditionalExpression RPAR (statement | LBRACE statement* RBRACE)
-    (ELSE (statement | LBRACE statement*RBRACE ))
+    (ELSE (statement | LBRACE statement*RBRACE ))?
     ;
 
 
