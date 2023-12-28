@@ -27,13 +27,13 @@ func_on_init:
         VOID ONININT LPAR TRADE ID RPAR (THROW EXCEPTION)? LBRACE ((statement)*) RBRACE;
 
 functionDec:
-    (type | VOID) ID {System.out.println("FunctionDec: " + $ID.getText());} //chap
+    (type | VOID) ID {System.out.println("FunctionDec:" + $ID.getText());} //chap
     LPAR (functionVarDec (COMMA functionVarDec)*)? RPAR (THROW EXCEPTION)?
     LBRACE ((statement)*) RBRACE
     ;
 
 functionVarDec:
-    pretype? type ID {System.out.println("ArgumentDec: " + $ID.getText());}
+    pretype? type ID
     ;
 
 mainBlock: // check!!!!!
@@ -75,8 +75,8 @@ unaryOperator:
     BITWISE_AND
     | BITWISE_OR
     | BITWISE_XOR
-    |PLUS_PLUS
-    |MINUS_MINUS
+    |PLUS_PLUS {System.out.println("Operator:++");}
+    |MINUS_MINUS {System.out.println("Operator:--");}
     | TILDE
     | NOT
     ;
@@ -214,17 +214,24 @@ postfixExpression
 postfixExpressionTemp
     :
     |  (DOT) (ID | builtInVar)postfixExpressionTemp
-    |  (PLUS_PLUS | MINUS_MINUS) postfixExpressionTemp
+    |  ( MINUS_MINUS) postfixExpressionTemp {System.out.println("Operator:--");}
+    |  (PLUS_PLUS) postfixExpressionTemp {System.out.println("Operator:++");}
     |  LPAR initializerList? RPAR postfixExpressionTemp
     |  LBRACKET (expression | bracedInitList) RBRACKET postfixExpressionTemp
     ;
 
 functionCall:
      ID DOT (ID | builtInVar) postfixExpressionTemp
-    | ID (PLUS_PLUS | MINUS_MINUS) postfixExpressionTemp
+    | ID ( MINUS_MINUS) postfixExpressionTemp {System.out.println("Operator:--");}
+    | ID (PLUS_PLUS ) postfixExpressionTemp {System.out.println("Operator:++");}
     | ID LBRACKET (expression | bracedInitList) RBRACKET postfixExpressionTemp
     | (builtInFunction | ID) {System.out.println("FunctionCall");}
      LPAR initializerList? RPAR postfixExpressionTemp
+//    | (THROW?) (EXCEPTION ) (
+//                         LPAR INT_VALUE COMMA STRING_VAL RPAR {System.out.println("ErrorControl:" + $INT_VALUE.getText());}
+//                         | bracedInitList
+//                     )postfixExpressionTemp
+    | THROW  postfixExpression
     ;
 
 builtInFunction:
@@ -256,16 +263,26 @@ castExpression:
    ;
 
 multiplicativeExpression
-    : castExpression ((MUL | DIV | MOD) castExpression)*
+    :castExpression
+    |LPAR multiplicativeExpression RPAR
+    |castExpression ((MUL) multiplicativeExpression ){System.out.println("Operator:*");}
+    |castExpression ((DIV) multiplicativeExpression ){System.out.println("Operator:/");}
+    |castExpression ( (MOD) multiplicativeExpression ){System.out.println("Operator:%");}
     ;
 
 additiveExpression
-    : multiplicativeExpression ((PLUS | MINUS) multiplicativeExpression)*
+    :
+    multiplicativeExpression
+    |LPAR additiveExpression RPAR
+    |multiplicativeExpression ((PLUS) additiveExpression {System.out.println("Operator:+");})
+    |multiplicativeExpression ((MINUS) additiveExpression {System.out.println("Operator:-");})
     ;
 
 shiftExpression
     :
-    additiveExpression (shiftOperator additiveExpression)*
+    |additiveExpression
+    |additiveExpression (RIGHT_SHIFT shiftExpression {System.out.println("Operator:>>");})
+    |additiveExpression (LEFT_SHIFT shiftExpression {System.out.println("Operator:<<");})
     ;
 
 shiftOperator
@@ -275,24 +292,37 @@ shiftOperator
 
 relationalExpression
     :
-    shiftExpression ((LT | GT ) shiftExpression)*
+    LPAR relationalExpression RPAR
+    |shiftExpression
+    |shiftExpression ((LT  ) relationalExpression {System.out.println("Operator:<");})
+    |shiftExpression ((GT ) relationalExpression {System.out.println("Operator:>");})
     ;
 
 equalityExpression
     :
-    relationalExpression ((EQ | NEQ) relationalExpression)*
+    LPAR equalityExpression RPAR
+    |relationalExpression
+    |relationalExpression ((EQ) equalityExpression {System.out.println("Operator:==");})
+    |relationalExpression ((NEQ) equalityExpression {System.out.println("Operator:!=");})
     ;
 
 bitwiseExpression:
-    equalityExpression (bitwiseOperators equalityExpression)*
+    LPAR bitwiseExpression RPAR
+    |equalityExpression
+    |equalityExpression (BITWISE_XOR bitwiseExpression {System.out.println("Oprator:^");})
+    |equalityExpression (BITWISE_OR bitwiseExpression {System.out.println("Oprator:|");})
+    |equalityExpression (BITWISE_AND bitwiseExpression {System.out.println("Oprator:&");})
     ;
-
 logicalAndExpression:
-    bitwiseExpression (AND bitwiseExpression)*
+    LPAR logicalAndExpression RPAR
+    |bitwiseExpression
+    |bitwiseExpression (AND logicalAndExpression {System.out.println("Oprator:&&");})
     ;
 
 logicalOrExpression:
-    logicalAndExpression (OR logicalAndExpression)*
+    LPAR  logicalOrExpression RPAR
+    |logicalAndExpression
+    |logicalAndExpression (OR logicalOrExpression {System.out.println("Oprator:||");})
     ;
 
 conditionalExpression:
@@ -323,7 +353,8 @@ elseStatment:
 
 
 assignSmt:
-    variable ASSIGN expression SEMICOLON
+    variable (PLUS_EQ | PERC_EQ | DIV_EQ | MUL_EQ | MINUS_EQ) expression SEMICOLON
+    |variable (ASSIGN ) expression SEMICOLON {System.out.println("Operator:=");}
     ;
 
 variable:
@@ -338,11 +369,12 @@ globalVarDeclaration:
 localVarDeclaration:
      varDeclaration
     | arrayDeclaration
-    | THROW expression SEMICOLON
+    //| THROW expression SEMICOLON
     ;
 
 varDeclaration:
-    pretype? (type | EXCEPTION) ID {System.out.println("VarDec:" + $ID.getText());} (ASSIGN expression )? SEMICOLON
+    pretype? (type | EXCEPTION) ID {System.out.println("VarDec:" + $ID.getText());} (ASSIGN {System.out.println("Operator:=");} expression )?
+    SEMICOLON
     ;
 
 arrayDeclaration:
@@ -351,8 +383,8 @@ arrayDeclaration:
     ;
 
 arrayInitialValue:
-    ASSIGN arrayList
-    | ASSIGN postfixExpression // check postfix!!!!!!
+    ASSIGN {System.out.println("Operator:=");} arrayList
+    | ASSIGN {System.out.println("Operator:=");} postfixExpression // check postfix!!!!!!
     ;
 
 arrayList:
@@ -360,11 +392,11 @@ arrayList:
     ;
 
 printSmt:
-    PRINT {System.out.println("Built-in: print");} LPAR initializerList? RPAR SEMICOLON
+    PRINT {System.out.println("Built-in:print");} LPAR initializerList? RPAR SEMICOLON
     ;
 
 returnSmt:
-    RETURN {System.out.println("Return");} (expression)? SEMICOLON
+    RETURN  (expression)? SEMICOLON
     ;
 
 forLoop:
@@ -414,7 +446,7 @@ type2:
     | STRING
     | ORDER
     | TRADE
-    |THROW
+
     ;
 
 type:
@@ -588,7 +620,7 @@ ASSIGN: '=';
 PLUS_EQ: '+=';
 MINUS_EQ : '-=';
 MUL_EQ : '*=';
-DIV_EQ : '/=';
+DIV_EQ : '=/';
 PERC_EQ : '%=';
 
 BlockComment: '/*' .*? '*/' -> skip;
