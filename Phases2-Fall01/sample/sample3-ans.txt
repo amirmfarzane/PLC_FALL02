@@ -1,0 +1,24 @@
+Line 4: Actor Receiver is not declared
+Line 5: Actor Person is not declared
+Line 15: Actor String is not declared
+Line 19: Variable b is not declared
+Line 20: Variable b is not declared
+Line 22: Unsupported operand type for operator mult
+Line 22: Unsupported operand type for operator mult
+Line 23: Unsupported operand type for operator mult
+Line 23: Unsupported operand type for operator sub
+Line 25: Unsupported operand type for operator assign
+Line 26: Unsupported operand type for operator assign
+Line 27: Unsupported operand type for operator add
+Line 28: Unsupported operand type for operator minus
+Line 30: Unsupported operand type for operator add
+Line 33: Condition type must be Boolean
+Line 37: Condition type must be Boolean
+Line 40: Unsupported operand type for operator add
+Line 48: The instance is not callable
+Line 49: Variable hhhh is not declared
+Line 50: There is no msghandler name get_minus in actor Medium
+Line 52: Left side of the assignment must be a valid lvalue
+Line 53: Unsupported operand type for operator assign
+Line 54: Unsupported operand type for operator minus
+Line 54: Left side of the assignment must be a valid lvalue

@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="sample3" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="main.Reduct" />
+    <module name="CA2" />
+    <option name="PROGRAM_PARAMETERS" value="sample/sample3.rd" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
